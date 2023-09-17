@@ -1,0 +1,16 @@
+Enter command (h for help): All commands are single characters.
+Valid commands are:
+l: Load data from file as current set of points
++: Add data from another to to current points
+-: Subtract data from another file from current poitns
+*: Scale current points by given pair of values
+/: Scale current points by given pair of values
+?: Print histogram current point distribution
+<: Shift points to left by a given value.
+>: Shift points to right by a given value.
+s: Save the current set of points to a given file
+p: Print current set of points on screen.
+h: Print this message
+q: Quit
+Enter command (h for help): Enter path to file: Enter command (h for help): 
+Enter command (h for help): 

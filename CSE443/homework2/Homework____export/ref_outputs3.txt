@@ -1,0 +1,20 @@
+Enter command (h for help): Enter path to file: Enter command (h for help): Enter path to file: Enter command (h for help): -1 -1
+1 -1
+
+Enter command (h for help): Enter values to scale x & y coordinates: Enter command (h for help): -100 -200
+100 -200
+
+Enter command (h for help): Enter values to scale x & y coordinates: Enter command (h for help): -4 -4
+4 -4
+
+Enter command (h for help): Enter positions to shift: Enter command (h for help): 0 0
+0 0
+0 0
+0 0
+0 0
+-4 -4
+4 -4
+
+Enter command (h for help): Enter positions to shift: Enter command (h for help): 4 -4
+
+Enter command (h for help): 

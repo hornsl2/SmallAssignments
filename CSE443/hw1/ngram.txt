@@ -1,0 +1,641 @@
+                                     n-gram
+
+   From Wikipedia, the free encyclopedia
+
+   In the fields of [20]computational linguistics and [21]probability, an
+   n-gram is a contiguous sequence of n items from a given [22]sequence of
+   text or speech. The items can be [23]phonemes, [24]syllables, [25]letters,
+   [26]words or [27]base pairs according to the application. The n-grams
+   typically are collected from a [28]text or [29]speech corpus. When the
+   items are words, n-grams may also be called shingles.^[30][1]
+
+   An n-gram of size 1 is referred to as a "unigram"; size 2 is a
+   "[31]bigram" (or, less commonly, a "digram"); size 3 is a "[32]trigram".
+   Larger sizes are sometimes referred to by the value of n in modern
+   language, e.g., "four-gram", "five-gram", and so on.
+
+Contents
+
+     * [33]1 Applications
+     * [34]2 Examples
+     * [35]3 n-gram models
+     * [36]4 Applications and considerations
+
+          * [37]4.1 Out-of-vocabulary words
+
+     * [38]5 n-grams for approximate matching
+     * [39]6 Other applications
+     * [40]7 Bias-versus-variance trade-off
+
+          * [41]7.1 Smoothing techniques
+          * [42]7.2 Skip-gram
+
+     * [43]8 Syntactic n-grams
+     * [44]9 See also
+     * [45]10 References
+     * [46]11 External links
+
+Applications[[47]edit]
+
+   An n-gram model is a type of probabilistic [48]language model for
+   predicting the next item in such a sequence in the form of a (n − 1)–order
+   [49]Markov model.^[50][2] n-gram models are now widely used in
+   [51]probability, [52]communication theory, [53]computational linguistics
+   (for instance, statistical [54]natural language processing),
+   [55]computational biology (for instance, biological [56]sequence
+   analysis), and [57]data compression. Two benefits of n-gram models (and
+   algorithms that use them) are simplicity and scalability – with larger n,
+   a model can store more context with a well-understood [58]space–time
+   tradeoff, enabling small experiments to scale up efficiently.
+
+Examples[[59]edit]
+
+                 Figure 1 n-gram examples from various disciplines
+      Field           Unit        Sample sequence     1-gram   2-gram     3-gram
+                                                     sequence sequence   sequence
+ Vernacular name                                     unigram   bigram    trigram
+    Order of
+    resulting                                           0        1          2
+[60]Markov model
+                                                     …, Cys,  …,       …,
+                                …                    Gly,     Cys-Gly, Cys-Gly-Leu,
+[61]Protein       [62]amino     Cys-Gly-Leu-Ser-Trp  Leu,     Gly-Leu, Gly-Leu-Ser,
+sequencing        acid          …                    Ser,     Leu-Ser, Leu-Ser-Trp,
+                                                     Trp, …   Ser-Trp, …
+                                                              …
+                                                     …, A, G, …, AG,
+[63]DNA                                              C, T, T, GC, CT,  …, AGC, GCT,
+sequencing        [64]base pair …AGCTTCGA…           C, G, A, TT, TC,  CTT, TTC,
+                                                     …        CG, GA,  TCG, CGA, …
+                                                              …
+                                                              …, to,
+                                                     …, t, o, o_, _b,  …, to_, o_b,
+                                                     _, b, e, be, e_,  _be, be_,
+                                                     _, o, r, _o, or,  e_o, _or,
+[65]Computational [66]character …to_be_or_not_to_be… _, n, o, r_, _n,  or_, r_n,
+linguistics                                          t, _, t, no, ot,  _no, not,
+                                                     o, _, b, t_, _t,  ot_, t_t,
+                                                     e, …     to, o_,  _to, to_,
+                                                              _b, be,  o_b, _be, …
+                                                              …
+                                                              …, to
+                                                     …, to,   be, be   …, to be or,
+[67]Computational [68]word      … to be or not to be be, or,  or, or   be or not,
+linguistics                     …                    not, to, not, not or not to,
+                                                     be, …    to, to   not to be, …
+                                                              be, …
+
+
+   Figure 1 shows several example sequences and the corresponding 1-gram,
+   2-gram and 3-gram sequences.
+
+   Here are further examples; these are word-level 3-grams and 4-grams (and
+   counts of the number of times they appeared) from the Google n-gram
+   corpus.^[69][3]
+
+   3-grams
+
+     * ceramics collectables collectibles (55)
+     * ceramics collectables fine (130)
+     * ceramics collected by (52)
+     * ceramics collectible pottery (50)
+     * ceramics collectibles cooking (45)
+
+   4-grams
+
+     * serve as the incoming (92)
+     * serve as the incubator (99)
+     * serve as the independent (794)
+     * serve as the index (223)
+     * serve as the indication (72)
+     * serve as the indicator (120)
+
+n-gram models[[70]edit]
+
+   An n-gram model models sequences, notably natural languages, using the
+   statistical properties of n-grams.
+
+   This idea can be traced to an experiment by [71]Claude Shannon's work in
+   [72]information theory. Shannon posed the question: given a sequence of
+   letters (for example, the sequence "for ex"), what is the [73]likelihood
+   of the next letter? From training data, one can derive a [74]probability
+   distribution for the next letter given a history of size n {\displaystyle
+   n} [75]n: a = 0.4, b = 0.00001, c = 0, ....; where the probabilities of
+   all possible "next-letters" sum to 1.0.
+
+   More concisely, an n-gram model predicts x i {\displaystyle x_{i}}
+   [76]x_{i} based on x i − ( n − 1 ) , … , x i − 1 {\displaystyle
+   x_{i-(n-1)},\dots ,x_{i-1}} [77]x_{i-(n-1)}, \dots, x_{i-1}. In
+   probability terms, this is P ( x i ∣ x i − ( n − 1 ) , … , x i − 1 )
+   {\displaystyle P(x_{i}\mid x_{i-(n-1)},\dots ,x_{i-1})} [78]P(x_{i}\mid
+   x_{{i-(n-1)}},\dots ,x_{{i-1}}). When used for [79]language modeling,
+   independence assumptions are made so that each word depends only on the
+   last n − 1 words. This [80]Markov model is used as an approximation of the
+   true underlying language. This assumption is important because it
+   massively simplifies the problem of estimating the language model from
+   data. In addition, because of the open nature of language, it is common to
+   group words unknown to the language model together.
+
+   Note that in a simple n-gram language model, the probability of a word,
+   conditioned on some number of previous words (one word in a bigram model,
+   two words in a trigram model, etc.) can be described as following a
+   [81]categorical distribution (often imprecisely called a "[82]multinomial
+   distribution").
+
+   In practice, the probability distributions are smoothed by assigning
+   non-zero probabilities to unseen words or n-grams; see [83]smoothing
+   techniques.
+
+Applications and considerations[[84]edit]
+
+   n-gram models are widely used in statistical [85]natural language
+   processing. In [86]speech recognition, [87]phonemes and sequences of
+   phonemes are modeled using a n-gram distribution. For parsing, words are
+   modeled such that each n-gram is composed of n words. For [88]language
+   identification, sequences of [89]characters/[90]graphemes (e.g.,
+   [91]letters of the alphabet) are modeled for different languages.^[92][4]
+   For sequences of characters, the 3-grams (sometimes referred to as
+   "trigrams") that can be generated from "good morning" are "goo", "ood",
+   "od ", "d m", " mo", "mor" and so forth, counting the space character as a
+   gram (sometimes the beginning and end of a text are modeled explicitly,
+   adding "__g", "_go", "ng_", and "g__"). For sequences of words, the
+   trigrams that can be generated from "the dog smelled like a skunk" are "#
+   the dog", "the dog smelled", "dog smelled like", "smelled like a", "like a
+   skunk" and "a skunk #".
+
+   Practitioners^[[93]who?] more interested in multiple word terms might
+   preprocess strings to remove spaces.^[[94]who?] Many simply collapse
+   [95]whitespace to a single space while preserving paragraph marks, because
+   the whitespace is frequently either an element of writing style or
+   introduces layout or presentation not required by the prediction and
+   deduction methodology. Punctuation is also commonly reduced or removed by
+   preprocessing and is frequently used to trigger functionality.
+
+   n-grams can also be used for sequences of words or almost any type of
+   data. For example, they have been used for extracting features for
+   clustering large sets of satellite earth images and for determining what
+   part of the Earth a particular image came from.^[96][5] They have also
+   been very successful as the first pass in genetic sequence search and in
+   the identification of the species from which short sequences of DNA
+   originated.^[97][6]
+
+   n-gram models are often criticized because they lack any explicit
+   representation of long range dependency. This is because the only explicit
+   dependency range is (n − 1) tokens for an n-gram model, and since natural
+   languages incorporate many cases of unbounded dependencies (such as
+   [98]wh-movement), this means that an n-gram model cannot in principle
+   distinguish unbounded dependencies from noise (since long range
+   correlations drop exponentially with distance for any Markov model). For
+   this reason, n-gram models have not made much impact on linguistic theory,
+   where part of the explicit goal is to model such dependencies.
+
+   Another criticism that has been made is that Markov models of language,
+   including n-gram models, do not explicitly capture the
+   performance/competence distinction. This is because n-gram models are not
+   designed to model linguistic knowledge as such, and make no claims to
+   being (even potentially) complete models of linguistic knowledge; instead,
+   they are used in practical applications.
+
+   In practice, n-gram models have been shown to be extremely effective in
+   modeling language data, which is a core component in modern statistical
+   [99]language applications.
+
+   Most modern applications that rely on n-gram based models, such as
+   [100]machine translation applications, do not rely exclusively on such
+   models; instead, they typically also incorporate [101]Bayesian inference.
+   Modern statistical models are typically made up of two parts, a [102]prior
+   distribution describing the inherent likelihood of a possible result and a
+   [103]likelihood function used to assess the compatibility of a possible
+   result with observed data. When a language model is used, it is used as
+   part of the prior distribution (e.g. to gauge the inherent "goodness" of a
+   possible translation), and even then it is often not the only component in
+   this distribution.
+
+   [104]Handcrafted features of various sorts are also used, for example
+   variables that represent the position of a word in a sentence or the
+   general topic of discourse. In addition, features based on the structure
+   of the potential result, such as syntactic considerations, are often used.
+   Such features are also used as part of the likelihood function, which
+   makes use of the observed data. Conventional linguistic theory can be
+   incorporated in these features (although in practice, it is rare that
+   features specific to generative or other particular theories of grammar
+   are incorporated, as [105]computational linguists tend to be "agnostic"
+   towards individual theories of grammar^[[106]citation needed]).
+
+  Out-of-vocabulary words[[107]edit]
+
+   Main article: [108]Statistical machine translation
+
+   An issue when using n-gram language models are out-of-vocabulary (OOV)
+   words. They are encountered in [109]computational linguistics and
+   [110]natural language processing when the input includes words which were
+   not present in a system's dictionary or database during its preparation.
+   By default, when a language model is estimated, the entire observed
+   vocabulary is used. In some cases, it may be necessary to estimate the
+   language model with a specific fixed vocabulary. In such a scenario, the
+   n-grams in the [111]corpus that contain an out-of-vocabulary word are
+   ignored. The n-gram probabilities are smoothed over all the words in the
+   vocabulary even if they were not observed.^[112][7]
+
+   Nonetheless, it is essential in some cases to explicitly model the
+   probability of out-of-vocabulary words by introducing a special token
+   (e.g. <unk>) into the vocabulary. Out-of-vocabulary words in the corpus
+   are effectively replaced with this special <unk> token before n-grams
+   counts are cumulated. With this option, it is possible to estimate the
+   transition probabilities of n-grams involving out-of-vocabulary
+   words.^[113][8]
+
+n-grams for approximate matching[[114]edit]
+
+   Main article: [115]Approximate string matching
+
+   n-grams can also be used for efficient approximate matching. By converting
+   a sequence of items to a set of n-grams, it can be embedded in a
+   [116]vector space, thus allowing the sequence to be compared to other
+   sequences in an efficient manner. For example, if we convert strings with
+   only letters in the English alphabet into single character 3-grams, we get
+   a 26 3 {\displaystyle 26^{3}} [117]26^3-dimensional space (the first
+   dimension measures the number of occurrences of "aaa", the second "aab",
+   and so forth for all possible combinations of three letters). Using this
+   representation, we lose information about the string. For example, both
+   the strings "abc" and "bca" give rise to exactly the same 2-gram "bc"
+   (although {"ab", "bc"} is clearly not the same as {"bc", "ca"}). However,
+   we know empirically that if two strings of real text have a similar vector
+   representation (as measured by [118]cosine distance) then they are likely
+   to be similar. Other metrics have also been applied to vectors of n-grams
+   with varying, sometimes better, results. For example, [119]z-scores have
+   been used to compare documents by examining how many standard deviations
+   each n-gram differs from its mean occurrence in a large collection, or
+   [120]text corpus, of documents (which form the "background" vector). In
+   the event of small counts, the [121]g-score (also known as [122]g-test)
+   may give better results for comparing alternative models.
+
+   It is also possible to take a more principled approach to the statistics
+   of n-grams, modeling similarity as the likelihood that two strings came
+   from the same source directly in terms of a problem in [123]Bayesian
+   inference.
+
+   n-gram-based searching can also be used for [124]plagiarism detection.
+
+Other applications[[125]edit]
+
+   n-grams find use in several areas of computer science, [126]computational
+   linguistics, and applied mathematics.
+
+   They have been used to:
+
+     * design [127]kernels that allow [128]machine learning algorithms such
+       as [129]support vector machines to learn from string data
+     * find likely candidates for the correct spelling of a misspelled word
+     * improve compression in [130]compression algorithms where a small area
+       of data requires n-grams of greater length
+     * assess the probability of a given word sequence appearing in text of a
+       language of interest in pattern recognition systems, [131]speech
+       recognition, OCR ([132]optical character recognition),
+       [133]Intelligent Character Recognition ([134]ICR), [135]machine
+       translation and similar applications
+     * improve retrieval in [136]information retrieval systems when it is
+       hoped to find similar "documents" (a term for which the conventional
+       meaning is sometimes stretched, depending on the data set) given a
+       single query document and a database of reference documents
+     * improve retrieval performance in genetic sequence analysis as in the
+       [137]BLAST family of programs
+     * identify the language a text is in or the species a small sequence of
+       DNA was taken from
+     * predict letters or words at random in order to create text, as in the
+       [138]dissociated press algorithm.
+     * [139]cryptanalysis
+
+Bias-versus-variance trade-off[[140]edit]
+
+   To choose a value for n in an n-gram model, it is necessary to find the
+   right trade off between the stability of the estimate against its
+   appropriateness. This means that trigram (i.e. triplets of words) is a
+   common choice with large training corpora (millions of words), whereas a
+   bigram is often used with smaller ones.
+
+  Smoothing techniques[[141]edit]
+
+   There are problems of balance weight between infrequent grams (for
+   example, if a proper name appeared in the training data) and frequent
+   grams. Also, items not seen in the training data will be given a
+   [142]probability of 0.0 without [143]smoothing. For unseen but plausible
+   data from a sample, one can introduce [144]pseudocounts. Pseudocounts are
+   generally motivated on Bayesian grounds.
+
+   In practice it is necessary to smooth the probability distributions by
+   also assigning non-zero probabilities to unseen words or n-grams. The
+   reason is that models derived directly from the n-gram frequency counts
+   have severe problems when confronted with any n-grams that have not
+   explicitly been seen before – [145]the zero-frequency problem. Various
+   smoothing methods are used, from simple "add-one" (Laplace) smoothing
+   (assign a count of 1 to unseen n-grams; see [146]Rule of succession) to
+   more sophisticated models, such as [147]Good–Turing discounting or
+   [148]back-off models. Some of these methods are equivalent to assigning a
+   [149]prior distribution to the probabilities of the n-grams and using
+   [150]Bayesian inference to compute the resulting [151]posterior n-gram
+   probabilities. However, the more sophisticated smoothing models were
+   typically not derived in this fashion, but instead through independent
+   considerations.
+
+     * [152]Linear interpolation (e.g., taking the [153]weighted mean of the
+       unigram, bigram, and trigram)
+     * [154]Good–Turing discounting
+     * [155]Witten–Bell discounting
+     * [156]Lidstone's smoothing
+     * [157]Katz's back-off model (trigram)
+     * [158]Kneser–Ney smoothing
+
+  Skip-gram[[159]edit]
+
+   In the field of [160]computational linguistics, in particular
+   [161]language modeling, skip-grams^[162][9] are a generalization of
+   n-grams in which the components (typically words) need not be consecutive
+   in the text under consideration, but may leave gaps that are skipped
+   over.^[163][10] They provide one way of overcoming the [164]data sparsity
+   problem found with conventional n-gram analysis.
+
+   Formally, an n-gram is a consecutive subsequence of length n of some
+   sequence of tokens w[1] … w[n]. A k-skip-n-gram is a length-n subsequence
+   where the components occur at distance at most k from each other.
+
+   For example, in the input text:
+
+           the rain in Spain falls mainly on the plain
+
+   the set of 1-skip-2-grams includes all the bigrams (2-grams), and in
+   addition the subsequences
+
+           the in, rain Spain, in falls, Spain mainly, falls on, mainly the,
+           and on plain.
+
+Syntactic n-grams[[165]edit]
+
+   Syntactic n-grams are n-grams defined by paths in syntactic dependency or
+   constituent trees rather than the linear structure of the
+   text.^[166][11]^[167][12]^[168][13] For example, the sentence "economic
+   news has little effect on financial markets" can be transformed to
+   syntactic n-grams following the tree structure of its [169]dependency
+   relations: news-economic, effect-little,
+   effect-on-markets-financial.^[170][11]
+
+   Syntactic n-grams are intended to reflect syntactic structure more
+   faithfully than linear n-grams, and have many of the same applications,
+   especially as features in a Vector Space Model. Syntactic n-grams for
+   certain tasks gives better results than the use of standard n-grams, for
+   example, for authorship attribution.^[171][14]
+
+See also[[172]edit]
+
+     * [173]Collocation
+     * [174]Hidden Markov model
+     * [175]n-tuple
+     * [176]String kernel
+     * [177]MinHash
+     * [178]Feature extraction
+     * [179]Longest common substring problem
+
+     * [180]v
+     * [181]t
+     * [182]e
+
+                      [183]Natural language processing
+                                   * [184]Text corpus
+                                   * [185]Speech corpus
+           General terms           * [186]Stopwords
+                                   * [187]Bag-of-words
+                                   * [188]AI-complete
+                                   * n-gram ([189]Bigram, [190]Trigram)
+                                   * [192]Text segmentation
+                                   * [193]Part-of-speech tagging
+                                   * [194]Text chunking
+                                   * [195]Compound term processing
+                                   * [196]Collocation extraction
+                                   * [197]Stemming
+                                   * [198]Lemmatisation
+        [191]Text analysis         * [199]Named-entity recognition
+                                   * [200]Coreference resolution
+                                   * [201]Sentiment analysis
+                                   * [202]Concept mining
+                                   * [203]Parsing
+                                   * [204]Word-sense disambiguation
+                                   * [205]Terminology extraction
+                                   * [206]Truecasing
+                                   * [208]Multi-document summarization
+   [207]Automatic summarization    * [209]Sentence extraction
+                                   * [210]Text simplification
+                                   * [212]Computer-assisted
+     [211]Machine translation      * [213]Example-based
+                                   * [214]Rule-based
+                                   * [217]Speech recognition
+   [215]Automatic identification   * [218]Speech synthesis
+       [216]and data capture       * [219]Optical character recognition
+                                   * [220]Natural language generation
+                                   * [222]Pachinko allocation
+         [221]Topic model          * [223]Latent Dirichlet allocation
+                                   * [224]Latent semantic analysis
+                                   * [227]Automated essay scoring
+                                   * [228]Concordancer
+      [225]Computer-assisted       * [229]Grammar checker
+          [226]reviewing           * [230]Predictive text
+                                   * [231]Spell checker
+                                   * [232]Syntax guessing
+                                   * [235]Automated online assistant
+       [233]Natural language       * [236]Chatbot
+        [234]user interface        * [237]Interactive fiction
+                                   * [238]Question answering
+
+References[[239]edit]
+
+    1. [240]^ Broder, Andrei Z.; Glassman, Steven C.; Manasse, Mark S.;
+       Zweig, Geoffrey (1997). "Syntactic clustering of the web". Computer
+       Networks and ISDN Systems. 29 (8): 1157–1166.
+       [241]doi:[242]10.1016/s0169-7552(97)00031-7. 
+    2. [243]^
+       [244]https://www.coursera.org/learn/natural-language-processing/lecture/UnEHs/07-01-noisy-channel-model-8-33
+    3. [245]^ Alex Franz and Thorsten Brants (2006). [246]"All Our N-gram are
+       Belong to You". Google Research Blog. Retrieved 2011-12-16. 
+    4. [247]^ Ted Dunning (1994). [248]"Statistical Identification of
+       Language". New Mexico State University.  Technical Report MCCS 94–273
+    5. [249]^ Soffer, A (1997). "Image categorization using texture
+       features". Proceedings of the Fourth International Conference on. 1
+       (233): 237. [250]doi:[251]10.1109/ICDAR.1997.619847. 
+    6. [252]^ Tomović, Andrija; Janičić, Predrag; Kešelj, Vlado (2006).
+       "n-Gram-based classification and unsupervised hierarchical clustering
+       of genome sequences". Computer Methods and Programs in Biomedicine. 81
+       (2): 137–153. [253]doi:[254]10.1016/j.cmpb.2005.11.007. 
+    7. [255]^ Wołk, K.; Marasek, K.; Glinkowski, W. (2015). "Telemedicine as
+       a special case of Machine Translation". Computerized Medical Imaging
+       and Graphics. 
+    8. [256]^ Wołk K., Marasek K. (2014). Polish-English Speech Statistical
+       Machine Translation Systems for the IWSLT 2014. Proceedings of the
+       11th International Workshop on Spoken Language Translation. Tahoe
+       Lake, USA. 
+    9. [257]^ Huang, Xuedong; Alleva, Fileno; Hon, Hsiao-wuen; Hwang,
+       Mei-yuh; Rosenfeld, Ronald (1 January 1992). [258]"The SPHINX-II
+       Speech Recognition System: An Overview". 7: 137–148 – via CiteSeer. 
+   10. [259]^ David Guthrie; et al. (2006). [260]"A Closer Look at Skip-gram
+       Modelling" (PDF). 
+   11. ^ [261]^a [262]^b Sidorov, Grigori; Velazquez, Francisco; Stamatatos,
+       Efstathios; Gelbukh, Alexander; Chanona-Hernández, Liliana (2012).
+       "Syntactic Dependency-based n-grams as Classification Features". LNAI
+       7630: 1–11. 
+   12. [263]^ Sidorov, Grigori (2013). "Syntactic Dependency-Based n-grams in
+       Rule Based Automatic English as Second Language Grammar Correction".
+       International Journal of Computational Linguistics and Applications. 4
+       (2): 169–188. 
+   13. [264]^ Figueroa, Alejandro; Atkinson, John (2012). [265]"Contextual
+       Language Models For Ranking Answers To Natural Language Definition
+       Questions". Computational Intelligence. 28 (4): 528–548.
+       [266]doi:[267]10.1111/j.1467-8640.2012.00426.x. 
+   14. [268]^ Sidorov, Grigori; Velasquez, Francisco; Stamatatos, Efstathios;
+       Gelbukh, Alexander; Chanona-Hernández, Liliana. "Syntactic n-Grams as
+       Machine Learning Features for Natural Language Processing". Expert
+       Systems with Applications. 41 (3): 853–860.
+       [269]doi:[270]10.1016/j.eswa.2013.08.015. 
+
+     * Christopher D. Manning, Hinrich Schütze, Foundations of Statistical
+       Natural Language Processing, MIT Press: 1999. [271]ISBN
+       [272]0-262-13360-1.
+     * White, Owen; Dunning, Ted; Sutton, Granger; Adams, Mark; Venter,
+       J.Craig; Fields, Chris (1993). "A quality control algorithm for dna
+       sequencing projects". Nucleic Acids Research. 21 (16): 3829–3838.
+       [273]doi:[274]10.1093/nar/21.16.3829. 
+     * Frederick J. Damerau, Markov Models and Linguistic Theory. Mouton. The
+       Hague, 1971.
+     * Figueroa, Alejandro; Atkinson, John (2012). [275]"Contextual Language
+       Models For Ranking Answers To Natural Language Definition Questions".
+       Computational Intelligence. 28 (4): 528–548.
+       [276]doi:[277]10.1111/j.1467-8640.2012.00426.x. 
+     * Brocardo, Marcelo Luiz; Issa Traore; Sherif Saad; Isaac Woungang
+       (2013). [278]Authorship Verification for Short Messages Using
+       Stylometry (PDF). IEEE Intl. Conference on Computer, Information and
+       Telecommunication Systems (CITS). 
+
+External links[[279]edit]
+
+     * [280]Google's Google Book n-gram viewer and [281]Web n-grams database
+       (September 2006)
+     * [282]Microsoft's web n-grams service
+     * [283]STATOPERATOR N-grams Project Weighted n-gram viewer for every
+       domain in Alexa Top 1M
+     * [284]1,000,000 most frequent 2,3,4,5-grams from the 425 million word
+       [285]Corpus of Contemporary American English
+     * [286]Peachnote's music ngram viewer
+     * [287]Stochastic Language Models (n-Gram) Specification (W3C)
+     * [288]Michael Collin's notes on n-Gram Language Models
+     * [289]OpenRefine: Clustering In Depth
+
+   Retrieved from
+   "[290]https://en.wikipedia.org/w/index.php?title=N-gram&oldid=796475923"
+   [291]Categories:
+
+     * [292]Natural language processing
+     * [293]Computational linguistics
+     * [294]Language modeling
+     * [295]Speech recognition
+     * [296]Corpus linguistics
+     * [297]Probabilistic models
+
+   Hidden categories:
+
+     * [298]Articles lacking in-text citations from February 2011
+     * [299]All articles lacking in-text citations
+     * [300]All articles with specifically marked weasel-worded phrases
+     * [301]Articles with specifically marked weasel-worded phrases from June
+       2014
+     * [302]All articles with unsourced statements
+     * [303]Articles with unsourced statements from November 2011
+     * [304]Use dmy dates from April 2017
+
+Navigation menu
+
+  Personal tools
+
+     * Not logged in
+     * [305]Talk
+     * [306]Contributions
+     * [307]Create account
+     * [308]Log in
+
+  Namespaces
+
+     * [309]Article
+     * [310]Talk
+
+  Variants
+
+  Views
+
+     * [311]Read
+     * [312]Edit
+     * [313]View history
+
+  More
+
+  Search
+
+   [314]_____________________ [315][ Search ] [316][ Go ]
+
+  Navigation
+
+     * [317]Main page
+     * [318]Contents
+     * [319]Featured content
+     * [320]Current events
+     * [321]Random article
+     * [322]Donate to Wikipedia
+     * [323]Wikipedia store
+
+  Interaction
+
+     * [324]Help
+     * [325]About Wikipedia
+     * [326]Community portal
+     * [327]Recent changes
+     * [328]Contact page
+
+  Tools
+
+     * [329]What links here
+     * [330]Related changes
+     * [331]Upload file
+     * [332]Special pages
+     * [333]Permanent link
+     * [334]Page information
+     * [335]Wikidata item
+     * [336]Cite this page
+
+  Print/export
+
+     * [337]Create a book
+     * [338]Download as PDF
+     * [339]Printable version
+
+  Languages
+
+     * [340]Català
+     * [341]Čeština
+     * [342]Deutsch
+     * [343]Español
+     * [344]Euskara
+     * [345]Français
+     * [346]Italiano
+     * [347]Norsk
+     * [348]Олык марий
+     * [349]Polski
+     * [350]Русский
+     * [351]Slovenčina
+     * [352]Suomi
+     * [353]Українська
+     * [354]中文
+
+   [355]Edit links
+
+     * This page was last edited on 21 August 2017, at 02:57.
+     * Text is available under the [356]Creative Commons
+       Attribution-ShareAlike License; additional terms may apply. By using
+       this site, you agree to the [357]Terms of Use and [358]Privacy Policy.
+       Wikipedia® is a registered trademark of the [359]Wikimedia Foundation,
+       Inc., a non-profit organization.
+

@@ -1,0 +1,19 @@
+l
+small_points1.txt
+-
+small_points2.txt
+p
+*
+100 200
+p
+/
+25 50
+p
+>
+5
+p
+<
+6
+p
+q
+
